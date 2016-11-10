@@ -314,7 +314,7 @@ describe('BEMTREE engine tests', function() {
         });
 
         block('b1').mod('a', 'b').content()('ok');
-      }, { block: 'b1' }, { block: 'b1', content: 'ok' });
+      }, { block: 'b1' }, { block: 'b1', mods: { a: 'b' }, content: 'ok' });
     });
 
     it('should inherit mods properly', function() {
@@ -322,10 +322,9 @@ describe('BEMTREE engine tests', function() {
         block('b1').content()(function() {
           return { elem: 'e1' };
         });
-      }, {
-        block: 'b1',
-        mods: { a: 'b' }
-      }, { block: 'b1', mods: { a: 'b' }, content: { elem: 'e1' } });
+      },
+      { block: 'b1', mods: { a: 'b' } },
+      { block: 'b1', mods: { a: 'b' }, content: { elem: 'e1' } });
     });
 
     it('should match on changed mods', function() {
@@ -399,7 +398,7 @@ describe('BEMTREE engine tests', function() {
         }
       }, { block: 'b1', content: [
         'yes', { block: 'b2' }
-      ] });
+      ], mods: { a: 'yes' } });
     });
   });
 
@@ -530,4 +529,199 @@ describe('BEMTREE engine tests', function() {
       null, '', undefined, { block: 'b1' }, undefined, 0
     ]);
   });
+
+  describe('modes', function() {
+    it('should support wrap() mode', function() {
+      test(function() {
+        block('b1').wrap()(function() {
+          return {
+            block: 'wrap',
+            content: this.ctx
+          };
+        });
+      },
+      { block: 'b1' },
+      { block: 'wrap', content: { block: 'b1' } });
+    });
+
+    it('should support replace() mode', function() {
+      test(function() {
+        block('b1').replace()(function() {
+          return { block: 'a2' };
+        });
+      },
+      { block: 'b1' },
+      { block: 'a2' });
+    });
+
+    it('should support extend() mode', function() {
+      test(function() {
+        block('b1')(
+          extend()(function() {
+            return { test: 42 };
+          }),
+          content()(function() {
+            return this.test;
+          })
+        );
+      },
+      { block: 'b1' },
+      { block: 'b1', content: 42 });
+    });
+
+    it('should support def() mode', function() {
+      test(function() {
+        block('b1').def()(function() {
+          return 42;
+        });
+      },
+      { block: 'b1' },
+      42);
+    });
+
+    it('should support content() mode', function() {
+      test(function() {
+        block('b1').content()(function() {
+          return 42;
+        });
+      },
+      { block: 'b1' },
+      { block: 'b1', content: 42 });
+    });
+
+    it('should support appendContent() mode', function() {
+      test(function() {
+        block('b1').appendContent()(function() {
+          return 42;
+        });
+      },
+      { block: 'b1', content: 1 },
+      { block: 'b1', content: [ 1, 42 ] });
+    });
+
+    it('should support prependContent() mode', function() {
+      test(function() {
+        block('b1').prependContent()(function() {
+          return 42;
+        });
+      },
+      { block: 'b1', content: 1 },
+      { block: 'b1', content: [ 42, 1 ] });
+    });
+
+    it('should support attrs() mode', function() {
+      test(function() {
+        block('b1').attrs()(function() {
+          return { id: 'test' };
+        });
+      },
+      { block: 'b1' },
+      { block: 'b1', attrs: { id: 'test' } });
+    });
+
+    it('should support addAttrs() mode', function() {
+      test(function() {
+        block('b1').addAttrs()(function() {
+          return { id: 'test' };
+        });
+      },
+      { block: 'b1', attrs: { name: 'bemjson' } },
+      { block: 'b1', attrs: { name: 'bemjson', id: 'test' } });
+    });
+
+    it('should support js() mode', function() {
+      test(function() {
+        block('b1').js()(true);
+      },
+      { block: 'b1' },
+      { block: 'b1', js: true });
+    });
+
+    it('should support addJs() mode', function() {
+      test(function() {
+        block('b1').addJs()(function() {
+          return { more: 'sea' };
+        });
+      },
+      { block: 'b1', js: { river: 'neva' } },
+      { block: 'b1', js: { river: 'neva', more: 'sea' } });
+    });
+
+    it('should support mix() mode', function() {
+      test(function() {
+        block('b1').mix()(function() {
+          return { block: 'mixed' };
+        });
+      },
+      { block: 'b1' },
+      { block: 'b1', mix: { block: 'mixed' } });
+    });
+
+    it('should support addMix() mode', function() {
+      test(function() {
+        block('b1').addMix()(function() {
+          return { block: 'mixed' };
+        });
+      },
+      { block: 'b1', mix: { block: 'i-bem' } },
+      { block: 'b1', mix: [ { block: 'i-bem' }, { block: 'mixed' } ] });
+    });
+
+    it('should support mods() mode', function() {
+      test(function() {
+        block('b1').mods()(function() {
+          return { disabled: 'true' };
+        });
+      },
+      { block: 'b1' },
+      { block: 'b1', mods: { disabled: 'true' } });
+    });
+
+    it('should support addMods() mode', function() {
+      test(function() {
+        block('b1').addMods()(function() {
+          return { disabled: 'true' };
+        });
+      },
+      { block: 'b1', mods: { size: 'm' } },
+      { block: 'b1', mods: { size: 'm', disabled: 'true' } });
+    });
+
+    it('should support elemMods() mode', function() {
+      test(function() {
+        block('b1').elem('e').elemMods()(function() {
+          return { size: 'm' };
+        });
+      },
+      { block: 'b1', elem: 'e' },
+      { block: 'b1', elem: 'e', elemMods: { size: 'm' } });
+    });
+
+    it('should support addElemMods() mode', function() {
+      test(function() {
+        block('b1').elem('e').addElemMods()(function() {
+          return { disabled: 'true' };
+        });
+      },
+      { block: 'b1', elem: 'e', elemMods: { size: 'm' } },
+      { block: 'b1', elem: 'e', elemMods: { size: 'm', disabled: 'true' } });
+    });
+
+    it('should support cls() mode', function() {
+      test(function() {
+        block('b1').cls()('test');
+      },
+      { block: 'b1' },
+      { block: 'b1', cls: 'test' });
+    });
+
+    it('should support bem() mode', function() {
+      test(function() {
+        block('b1').bem()(false);
+      },
+      { block: 'b1' },
+      { block: 'b1', bem: false });
+    });
+  });
+
 });

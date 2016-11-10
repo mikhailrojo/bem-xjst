@@ -726,8 +726,8 @@ More information about [apply()](7-runtime.md#apply).
 
 ## BEMTREE
 
-Only the [def](#def), [content](#content), [replace](#replace),
-[extend](#extend) and [wrap](#wrap) modes are used by the BEMTREE engine. User-defined modes can also be used. The other modes described in the documentation above can only be used in BEMHTML.
+All modes from BEMHTML works in BEMTREE. The only difference is format of
+retult. For BEMHTML result will be HTML, for BEMTREE — BEMJSON.
 
 ***
 
