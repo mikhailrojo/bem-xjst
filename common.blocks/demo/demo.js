@@ -8,7 +8,7 @@ modules.define('demo', [ 'i-bem__dom', 'pretty', 'functions__debounce' ], functi
                     this._bemhtml = this.findBlockOn('bemhtml', 'editor');
                     this._bemjson = this.findBlockOn('bemjson', 'editor');
                     this._html = this.findBlockOn('html', 'editor');
-
+                    this._engine = BEMHTML;
                     this._debouncedOnChange = debounce(this._onChange, 150, this);
 
                     this._bemhtml.on('change', this._debouncedOnChange);
@@ -35,9 +35,14 @@ modules.define('demo', [ 'i-bem__dom', 'pretty', 'functions__debounce' ], functi
         _getBEMJSON: function() {
             return this._bemjson.getValue();
         },
+        changeEngine: function(data){
+            this._engine = window[data];
+            this._render();
+        },
+
         _render: function() {
             try {
-                var api = new BEMHTML({}),
+                var api = new this._engine({}),
                     bemhtml = {};
 
                 api.compile(this._getBEMHTML());
@@ -54,9 +59,12 @@ modules.define('demo', [ 'i-bem__dom', 'pretty', 'functions__debounce' ], functi
                 return;
             }
 
-            this._html.setValue(pretty(bemhtml.apply(BEMJSON), {
-                max_char: 1000
-            }));
+            var finalCode = bemhtml.apply(BEMJSON);
+            if (this._engine === BEMHTML) {
+                finalCode = pretty(finalCode, {max_char: 1000});
+            }
+
+            this._html.setValue(finalCode);
         },
         _save: function() {
             var bemhtml = this._getBEMHTML(),
@@ -74,6 +82,7 @@ modules.define('demo', [ 'i-bem__dom', 'pretty', 'functions__debounce' ], functi
             ].join('&'));
         },
         _load: function() {
+
             var data = parseParams(location.search.split('?')[1]) || store.get('playground');
 
             if (!data || (data.version && data.version !== this.params.version)) {
